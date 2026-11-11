@@ -40,7 +40,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HLW|Input")
 	TObjectPtr<UInputAction> CrouchAction;
 
-	// Tuning: designers adjust these in the Blueprint
+	// Adjust in the Blueprint
 	UPROPERTY(EditDefaultsOnly, Category = "HLW|Movement", meta = (ClampMin = "0"))
 	float WalkSpeed = 250.f;
 
@@ -48,7 +48,7 @@ protected:
 	float SprintSpeed = 450.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HLW|Movement", meta = (ClampMin = "0"))
-	float CrouchSpeed = 150.f;
+	float CrouchSpeed = 125.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HLW|Camera", meta = (ClampMin = "0.01"))
 	float LookSensitivity = 1.f;

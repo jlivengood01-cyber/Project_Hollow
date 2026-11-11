@@ -24,7 +24,6 @@ void AHLWPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Applied here, not in the constructor, so Blueprint-overridden values take effect
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = WalkSpeed;
 	Movement->MaxWalkSpeedCrouched = CrouchSpeed;
