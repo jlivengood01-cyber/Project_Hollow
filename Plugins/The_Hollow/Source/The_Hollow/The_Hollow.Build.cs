@@ -37,6 +37,8 @@ public class The_Hollow : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"InputCore",
+				"UMG",
 				"Slate",
 				"SlateCore",
 				// ... add private dependencies that you statically link with here ...	
