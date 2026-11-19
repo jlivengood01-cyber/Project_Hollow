@@ -1,5 +1,7 @@
 #include "Characters/Player/HLWPlayerCharacter.h"
 
+#include "Access/HLWKeycardInventoryComponent.h"
+#include "UI/HLWAccessFeedbackComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
@@ -16,6 +18,9 @@ AHLWPlayerCharacter::AHLWPlayerCharacter()
 	FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCamera->SetRelativeLocation(FVector(0.f, 0.f, 64.f)); // Eye height
 	FirstPersonCamera->bUsePawnControlRotation = true;
+
+	KeycardInventory = CreateDefaultSubobject<UHLWKeycardInventoryComponent>(TEXT("KeycardInventory"));
+	AccessFeedback = CreateDefaultSubobject<UHLWAccessFeedbackComponent>(TEXT("AccessFeedback"));
 
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
