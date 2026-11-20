@@ -1,7 +1,9 @@
 #include "Characters/Player/HLWPlayerCharacter.h"
 
 #include "Access/HLWKeycardInventoryComponent.h"
+#include "Electrical/HLWItemHolderComponent.h"
 #include "UI/HLWAccessFeedbackComponent.h"
+#include "UI/HLWPowerFeedbackComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
@@ -21,6 +23,8 @@ AHLWPlayerCharacter::AHLWPlayerCharacter()
 
 	KeycardInventory = CreateDefaultSubobject<UHLWKeycardInventoryComponent>(TEXT("KeycardInventory"));
 	AccessFeedback = CreateDefaultSubobject<UHLWAccessFeedbackComponent>(TEXT("AccessFeedback"));
+	ItemHolder = CreateDefaultSubobject<UHLWItemHolderComponent>(TEXT("ItemHolder"));
+	PowerFeedback = CreateDefaultSubobject<UHLWPowerFeedbackComponent>(TEXT("PowerFeedback"));
 
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }

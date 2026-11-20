@@ -1,6 +1,7 @@
 #include "Access/HLWAccessControlledDoor.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Electrical/HLWPowerConsumerComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -25,12 +26,25 @@ AHLWAccessControlledDoor::AHLWAccessControlledDoor()
 		DoorMesh->SetRelativeScale3D(FVector(0.2f, 1.2f, 2.2f));
 		DoorMesh->SetRelativeLocation(FVector(0.f, 0.f, 110.f));
 	}
+
+	PowerConsumer = CreateDefaultSubobject<UHLWPowerConsumerComponent>(TEXT("PowerConsumer"));
 }
 
 void AHLWAccessControlledDoor::BeginPlay()
 {
 	Super::BeginPlay();
 	ClosedLocation = DoorMesh->GetRelativeLocation();
+
+	if (PowerConsumer->UsesCircuit())
+	{
+		PowerConsumer->OnPowerChanged.AddDynamic(this, &ThisClass::HandlePowerChanged);
+		ApplyPower(PowerConsumer->IsPowered(), true);
+	}
+}
+
+void AHLWAccessControlledDoor::HandlePowerChanged(bool bNewPowered, bool bInitial)
+{
+	ApplyPower(bNewPowered, bInitial);
 }
 
 void AHLWAccessControlledDoor::Tick(float DeltaSeconds)
@@ -78,14 +92,21 @@ void AHLWAccessControlledDoor::SetDoorOpen(bool bOpen)
 
 void AHLWAccessControlledDoor::SetPowered(bool bNewPowered)
 {
+	ApplyPower(bNewPowered, !bPowerKnown);
+}
+
+void AHLWAccessControlledDoor::ApplyPower(bool bNewPowered, bool bSilent)
+{
+	bPowerKnown = true;
 	if (bPowered == bNewPowered || PowerFailureBehavior == EHLWPowerFailureBehavior::KeepState)
 	{
 		bPowered = bNewPowered;
 		return;
 	}
 
+	// Power never changes the lock, lockdown or credentials
 	bPowered = bNewPowered;
-	if (!bPowered)
+	if (!bPowered && !bSilent)
 	{
 		PlaySound(PowerLostSound);
 	}
@@ -121,7 +142,11 @@ void AHLWAccessControlledDoor::OnAccessDenied_Implementation(AActor* Reader, EHL
 
 void AHLWAccessControlledDoor::OnReaderPowerChanged_Implementation(AActor* Reader, bool bReaderPowered)
 {
-	SetPowered(bReaderPowered);
+	// A door on its own circuit ignores the reader
+	if (!PowerConsumer->UsesCircuit())
+	{
+		SetPowered(bReaderPowered);
+	}
 }
 
 void AHLWAccessControlledDoor::OnSecurityLockChanged_Implementation(AActor* Reader, bool bLocked)

@@ -6,6 +6,7 @@
 #include "HLWInteractableInterface.h"
 #include "HLWAccessControlledDoor.generated.h"
 
+class UHLWPowerConsumerComponent;
 class USoundBase;
 class UStaticMeshComponent;
 
@@ -23,7 +24,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HLW|Door")
 	void SetDoorOpen(bool bOpen);
 
-	// For the Electrical System; readers also forward their power here
+	// Driven by PowerConsumer when it has a circuit, otherwise by the reader
 	UFUNCTION(BlueprintCallable, Category = "HLW|Door")
 	void SetPowered(bool bNewPowered);
 
@@ -58,6 +59,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Door")
 	TObjectPtr<UStaticMeshComponent> DoorMesh;
 
+	// Set a circuit to power the door directly. Empty follows the reader's power.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Door")
+	TObjectPtr<UHLWPowerConsumerComponent> PowerConsumer;
+
 	// Off means a normal door that opens with interact
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HLW|Door")
 	bool bRequiresAccess = true;
@@ -91,6 +96,10 @@ protected:
 	TObjectPtr<USoundBase> PowerLostSound;
 
 private:
+	UFUNCTION()
+	void HandlePowerChanged(bool bNewPowered, bool bInitial);
+
+	void ApplyPower(bool bNewPowered, bool bSilent);
 	void PlaySound(USoundBase* Sound) const;
 	void UpdateTick();
 
@@ -100,4 +109,7 @@ private:
 	bool bUnlocked = false;
 	bool bPowered = true;
 	bool bSecurityLocked = false;
+
+	// The first power state a door hears about is its starting state
+	bool bPowerKnown = false;
 };

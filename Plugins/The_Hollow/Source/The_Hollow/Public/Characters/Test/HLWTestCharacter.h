@@ -6,13 +6,15 @@
 
 class UCameraComponent;
 class UHLWAccessFeedbackComponent;
+class UHLWItemHolderComponent;
 class UHLWKeycardInventoryComponent;
+class UHLWPowerFeedbackComponent;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 
 // First-person test pawn. Builds its own input, so it works without any setup.
-// WASD to move, mouse to look, E to interact, F5 to save access state, F9 to load it.
+// WASD to move, mouse to look, E to interact, F5 to save, F9 to load, P for the power status panel.
 UCLASS()
 class THE_HOLLOW_API AHLWTestCharacter : public ACharacter
 {
@@ -36,6 +38,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Test")
 	TObjectPtr<UHLWAccessFeedbackComponent> AccessFeedback;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Test")
+	TObjectPtr<UHLWItemHolderComponent> ItemHolder;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Test")
+	TObjectPtr<UHLWPowerFeedbackComponent> PowerFeedback;
+
 	UPROPERTY(EditAnywhere, Category = "HLW|Test", meta = (ClampMin = "0"))
 	float WalkSpeed = 400.f;
 
@@ -51,6 +59,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "HLW|Test")
 	FString TestSaveSlot = TEXT("HLW_AccessTest");
 
+	UPROPERTY(EditAnywhere, Category = "HLW|Test")
+	FString PowerSaveSlot = TEXT("HLW_PowerTest");
+
 private:
 	void BuildInput();
 	void HandleMove(const FInputActionValue& Value);
@@ -58,6 +69,7 @@ private:
 	void HandleInteract();
 	void HandleSave();
 	void HandleLoad();
+	void HandleTogglePowerPanel();
 	void Report(const FString& Message) const;
 
 	// Created at runtime, no assets needed
@@ -78,4 +90,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> LoadAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> PowerPanelAction;
 };

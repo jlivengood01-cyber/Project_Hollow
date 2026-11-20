@@ -7,7 +7,9 @@
 
 class UCameraComponent;
 class UHLWAccessFeedbackComponent;
+class UHLWItemHolderComponent;
 class UHLWKeycardInventoryComponent;
+class UHLWPowerFeedbackComponent;
 class UInputAction;
 struct FInputActionValue;
 
@@ -34,6 +36,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Keycard")
 	TObjectPtr<UHLWAccessFeedbackComponent> AccessFeedback;
+
+	// Stand-in for fuses until the Player Inventory System exists
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Items")
+	TObjectPtr<UHLWItemHolderComponent> ItemHolder;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Power")
+	TObjectPtr<UHLWPowerFeedbackComponent> PowerFeedback;
 
 	// Input actions: assigned in BP_HLW_PlayerCharacter
 	UPROPERTY(EditDefaultsOnly, Category = "HLW|Input")

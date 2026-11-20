@@ -2,7 +2,10 @@
 
 #include "Access/HLWAccessStateSubsystem.h"
 #include "Access/HLWKeycardInventoryComponent.h"
+#include "Electrical/HLWItemHolderComponent.h"
+#include "Electrical/HLWPowerStateSubsystem.h"
 #include "UI/HLWAccessFeedbackComponent.h"
+#include "UI/HLWPowerFeedbackComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
@@ -43,6 +46,8 @@ AHLWTestCharacter::AHLWTestCharacter()
 
 	KeycardInventory = CreateDefaultSubobject<UHLWKeycardInventoryComponent>(TEXT("KeycardInventory"));
 	AccessFeedback = CreateDefaultSubobject<UHLWAccessFeedbackComponent>(TEXT("AccessFeedback"));
+	ItemHolder = CreateDefaultSubobject<UHLWItemHolderComponent>(TEXT("ItemHolder"));
+	PowerFeedback = CreateDefaultSubobject<UHLWPowerFeedbackComponent>(TEXT("PowerFeedback"));
 }
 
 void AHLWTestCharacter::PostInitializeComponents()
@@ -69,6 +74,7 @@ void AHLWTestCharacter::BuildInput()
 	InteractAction = NewObject<UInputAction>(this, TEXT("IA_TestInteract"));
 	SaveAction = NewObject<UInputAction>(this, TEXT("IA_TestSave"));
 	LoadAction = NewObject<UInputAction>(this, TEXT("IA_TestLoad"));
+	PowerPanelAction = NewObject<UInputAction>(this, TEXT("IA_TestPowerPanel"));
 
 	InputContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Test"));
 
@@ -95,6 +101,7 @@ void AHLWTestCharacter::BuildInput()
 	InputContext->MapKey(InteractAction, EKeys::E);
 	InputContext->MapKey(SaveAction, EKeys::F5);
 	InputContext->MapKey(LoadAction, EKeys::F9);
+	InputContext->MapKey(PowerPanelAction, EKeys::P);
 }
 
 void AHLWTestCharacter::NotifyControllerChanged()
@@ -125,18 +132,30 @@ void AHLWTestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Input->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::HandleInteract);
 	Input->BindAction(SaveAction, ETriggerEvent::Started, this, &ThisClass::HandleSave);
 	Input->BindAction(LoadAction, ETriggerEvent::Started, this, &ThisClass::HandleLoad);
+	Input->BindAction(PowerPanelAction, ETriggerEvent::Started, this, &ThisClass::HandleTogglePowerPanel);
 }
 
 void AHLWTestCharacter::HandleSave()
 {
 	UHLWAccessStateSubsystem* State = UHLWAccessStateSubsystem::Get(this);
 	Report(State && State->SaveToSlot(TestSaveSlot) ? TEXT("Access state saved") : TEXT("Access save failed"));
+
+	UHLWPowerStateSubsystem* Power = UHLWPowerStateSubsystem::Get(this);
+	Report(Power && Power->SaveToSlot(PowerSaveSlot) ? TEXT("Power state saved") : TEXT("Power save failed"));
 }
 
 void AHLWTestCharacter::HandleLoad()
 {
 	UHLWAccessStateSubsystem* State = UHLWAccessStateSubsystem::Get(this);
 	Report(State && State->LoadFromSlot(TestSaveSlot) ? TEXT("Access state loaded") : TEXT("No access save found"));
+
+	UHLWPowerStateSubsystem* Power = UHLWPowerStateSubsystem::Get(this);
+	Report(Power && Power->LoadFromSlot(PowerSaveSlot) ? TEXT("Power state loaded") : TEXT("No power save found"));
+}
+
+void AHLWTestCharacter::HandleTogglePowerPanel()
+{
+	PowerFeedback->ToggleStatusPanel();
 }
 
 void AHLWTestCharacter::HandleMove(const FInputActionValue& Value)

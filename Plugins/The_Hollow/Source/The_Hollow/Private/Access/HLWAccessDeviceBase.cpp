@@ -1,6 +1,7 @@
 #include "Access/HLWAccessDeviceBase.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Electrical/HLWPowerConsumerComponent.h"
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -19,6 +20,27 @@ AHLWAccessDeviceBase::AHLWAccessDeviceBase()
 	{
 		Mesh->SetStaticMesh(CubeMesh.Object);
 	}
+
+	PowerConsumer = CreateDefaultSubobject<UHLWPowerConsumerComponent>(TEXT("PowerConsumer"));
+}
+
+void AHLWAccessDeviceBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (PowerConsumer->UsesCircuit())
+	{
+		PowerConsumer->OnPowerChanged.AddDynamic(this, &ThisClass::HandlePowerChanged);
+
+		// Quiet sync, subclasses notify their devices after this returns
+		bPowered = PowerConsumer->IsPowered();
+	}
+}
+
+void AHLWAccessDeviceBase::HandlePowerChanged(bool bNewPowered, bool bInitial)
+{
+	// Power only, never touches locks, lockdowns or disabled state
+	SetPowered(bNewPowered);
 }
 
 void AHLWAccessDeviceBase::SetPowered(bool bNewPowered)

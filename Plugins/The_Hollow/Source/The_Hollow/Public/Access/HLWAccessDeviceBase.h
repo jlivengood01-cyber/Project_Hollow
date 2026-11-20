@@ -5,6 +5,7 @@
 #include "Access/HLWAccessDeviceState.h"
 #include "HLWAccessDeviceBase.generated.h"
 
+class UHLWPowerConsumerComponent;
 class UStaticMeshComponent;
 
 // Shared power, network and fault state for readers, elevator panels and terminals
@@ -16,7 +17,7 @@ class THE_HOLLOW_API AHLWAccessDeviceBase : public AActor, public IHLWAccessDevi
 public:
 	AHLWAccessDeviceBase();
 
-	// Stand-ins until the Electrical and Security systems drive these
+	// Driven by the PowerConsumer when it has a circuit, otherwise set by hand
 	UFUNCTION(BlueprintCallable, Category = "HLW|Device")
 	void SetPowered(bool bNewPowered);
 
@@ -31,11 +32,17 @@ public:
 	virtual bool IsOperational_Implementation() override { return bOperational; }
 
 protected:
+	virtual void BeginPlay() override;
+
 	// Called after any of the three states changes
 	virtual void OnDeviceStateChanged(bool bPowerChanged) {}
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Device")
 	TObjectPtr<UStaticMeshComponent> Mesh;
+
+	// Set a circuit to tie this device to the electrical system. Empty keeps bPowered manual.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Device")
+	TObjectPtr<UHLWPowerConsumerComponent> PowerConsumer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HLW|Device|State")
 	bool bPowered = true;
@@ -45,4 +52,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HLW|Device|State")
 	bool bOperational = true;
+
+private:
+	UFUNCTION()
+	void HandlePowerChanged(bool bNewPowered, bool bInitial);
 };
