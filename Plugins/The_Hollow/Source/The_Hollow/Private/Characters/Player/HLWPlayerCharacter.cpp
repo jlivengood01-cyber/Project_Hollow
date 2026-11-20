@@ -19,8 +19,11 @@ AHLWPlayerCharacter::AHLWPlayerCharacter()
 	FirstPersonCamera->SetRelativeLocation(FVector(0.f, 0.f, 64.f)); // Eye height
 	FirstPersonCamera->bUsePawnControlRotation = true;
 
+
+	HealthComponent = CreateDefaultSubobject<UHLWHealthComponent>(TEXT("HealthComponent"));
 	KeycardInventory = CreateDefaultSubobject<UHLWKeycardInventoryComponent>(TEXT("KeycardInventory"));
 	AccessFeedback = CreateDefaultSubobject<UHLWAccessFeedbackComponent>(TEXT("AccessFeedback"));
+
 
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
@@ -29,9 +32,8 @@ void AHLWPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UCharacterMovementComponent* Movement = GetCharacterMovement();
-	Movement->MaxWalkSpeed = WalkSpeed;
-	Movement->MaxWalkSpeedCrouched = CrouchSpeed;
+	ApplyMovementSpeeds();
+	HealthComponent->OnHealthStateChanged.AddDynamic(this, &ThisClass::HandleHealthStateChanged);
 }
 
 void AHLWPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -77,13 +79,13 @@ void AHLWPlayerCharacter::HandleLook(const FInputActionValue& Value)
 void AHLWPlayerCharacter::HandleSprintStarted()
 {
 	bIsSprinting = true;
-	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	ApplyMovementSpeeds();
 }
 
 void AHLWPlayerCharacter::HandleSprintCompleted()
 {
 	bIsSprinting = false;
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	ApplyMovementSpeeds();
 }
 
 void AHLWPlayerCharacter::HandleCrouchStarted()
@@ -102,4 +104,17 @@ void AHLWPlayerCharacter::HandleCrouchCompleted()
 	{
 		UnCrouch();
 	}
+}
+
+void AHLWPlayerCharacter::HandleHealthStateChanged(EHLWHealthState NewState, EHLWHealthState OldState)
+{
+	SpeedMultiplier = (NewState == EHLWHealthState::Injured) ? InjuredSpeedMultiplier : 1.f;
+	ApplyMovementSpeeds();
+}
+
+void AHLWPlayerCharacter::ApplyMovementSpeeds()
+{
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	Movement->MaxWalkSpeed = (bIsSprinting ? SprintSpeed : WalkSpeed) * SpeedMultiplier;
+	Movement->MaxWalkSpeedCrouched = CrouchSpeed * SpeedMultiplier;
 }
