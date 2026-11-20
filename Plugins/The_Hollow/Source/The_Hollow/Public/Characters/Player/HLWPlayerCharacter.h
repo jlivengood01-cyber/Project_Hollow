@@ -7,6 +7,8 @@
 #include "HLWPlayerCharacter.generated.h"
 
 class UCameraComponent;
+class UHLWAccessFeedbackComponent;
+class UHLWKeycardInventoryComponent;
 class UInputAction;
 struct FInputActionValue;
 
@@ -33,6 +35,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Health")
 	TObjectPtr<UHLWHealthComponent> HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Keycard")
+	TObjectPtr<UHLWKeycardInventoryComponent> KeycardInventory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HLW|Keycard")
+	TObjectPtr<UHLWAccessFeedbackComponent> AccessFeedback;
+
 
 	// Input actions: assigned in BP_HLW_PlayerCharacter
 	UPROPERTY(EditDefaultsOnly, Category = "HLW|Input")
