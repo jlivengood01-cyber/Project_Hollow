@@ -3,24 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Components/ActorComponent.h"
 #include "HLWInteractionComponent.generated.h"
 
-UCLASS()
-class THE_HOLLOW_API AHLWInteractionComponent : public AActor
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class THE_HOLLOW_API UHLWInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AHLWInteractionComponent();
+
+public:
+    UHLWInteractionComponent();
+
+    UFUNCTION(BlueprintCallable, Category = "HLW|Interaction")
+    void CheckForInteractable();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HLW|Interaction")
+    float InteractionDistance = 250.0f;
 };

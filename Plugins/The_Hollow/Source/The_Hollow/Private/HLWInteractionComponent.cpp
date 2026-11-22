@@ -2,26 +2,65 @@
 
 
 #include "HLWInteractionComponent.h"
+#include "HLWInteractableInterface.h"
+#include "GameFramework/Pawn.h"
+#include "Camera/CameraComponent.h"
+#include "Engine/World.h"
 
-// Sets default values
-AHLWInteractionComponent::AHLWInteractionComponent()
+UHLWInteractionComponent::UHLWInteractionComponent()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+    PrimaryComponentTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
-void AHLWInteractionComponent::BeginPlay()
+void UHLWInteractionComponent::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
 }
 
-// Called every frame
-void AHLWInteractionComponent::Tick(float DeltaTime)
+void UHLWInteractionComponent::CheckForInteractable()
 {
-	Super::Tick(DeltaTime);
+    // Get the player who owns this interaction component
+    APawn* OwnerPawn = Cast<APawn>(GetOwner());
 
+    if (!OwnerPawn)
+    {
+        return;
+    }
+
+    // Find the player's first-person camera
+    UCameraComponent* Camera = OwnerPawn->FindComponentByClass<UCameraComponent>();
+
+    if (!Camera)
+    {
+        return;
+    }
+
+    // Calculate how far the player can interact
+    FVector Start = Camera->GetComponentLocation();
+    FVector End = Start + Camera->GetForwardVector() * InteractionDistance;
+
+    FHitResult Hit;
+
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(OwnerPawn);
+
+    bool bHit = GetWorld()->LineTraceSingleByChannel(
+        Hit,
+        Start,
+        End,
+        ECC_Visibility,
+        Params
+    );
+
+    if (bHit && Hit.GetActor() &&
+        Hit.GetActor()->GetClass()->ImplementsInterface(UHLWInteractableInterface::StaticClass()))
+    {
+        AActor* InteractableActor = Hit.GetActor();
+
+        if (IHLWInteractableInterface::Execute_CanInteract(InteractableActor))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Interactable detected: %s"), *InteractableActor->GetName());
+        }
+    }
 }
 
